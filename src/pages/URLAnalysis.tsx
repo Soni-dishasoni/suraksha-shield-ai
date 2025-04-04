@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -285,7 +284,7 @@ const URLAnalysis = () => {
                 </div>
 
                 {result.risks && result.risks.length > 0 && (
-                  <Alert variant="warning" className="bg-yellow-50 text-yellow-800 border-yellow-200">
+                  <Alert variant="default" className="bg-yellow-50 text-yellow-800 border-yellow-200">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertTitle>Potential Risks Detected</AlertTitle>
                     <AlertDescription>
