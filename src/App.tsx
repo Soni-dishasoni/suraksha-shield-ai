@@ -9,6 +9,11 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import URLAnalysis from "./pages/URLAnalysis";
 import SignIn from "./pages/SignIn";
+import EmailFiltering from "./pages/EmailFiltering";
+import SMSAnalysis from "./pages/SMSAnalysis";
+import Leaderboard from "./pages/Leaderboard";
+import Badges from "./pages/Badges";
+import Quiz from "./pages/Quiz";
 
 const App = () => {
   // Create a client inside the component
@@ -31,6 +36,11 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/url-analysis" element={<URLAnalysis />} />
             <Route path="/sign-in" element={<SignIn />} />
+            <Route path="/email-filtering" element={<EmailFiltering />} />
+            <Route path="/sms-analysis" element={<SMSAnalysis />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/badges" element={<Badges />} />
+            <Route path="/quiz" element={<Quiz />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
