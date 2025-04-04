@@ -1,376 +1,315 @@
 
-import React, { useState } from "react";
-import Layout from "@/components/layout/Layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "@/components/ui/use-toast";
-import { Mail, AlertTriangle, CheckCircle, Shield, Info, Upload, Copy, Loader2 } from "lucide-react";
+import React, { useState } from 'react';
+import Layout from '@/components/layout/Layout';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { CheckCircle, XCircle, AlertTriangle, LinkIcon, PaperclipIcon, User, Shield } from 'lucide-react';
+
+interface AnalysisResult {
+  score: number;
+  verdict: "safe" | "suspicious" | "dangerous";
+  reasons: string[];
+  suggestions: string[];
+  details: {
+    links: {
+      url: string;
+      status: "safe" | "suspicious" | "malicious";
+    }[];
+    attachments: {
+      name: string;
+      type: string;
+      status: "safe" | "suspicious" | "malicious";
+    }[];
+    senderReputation: "good" | "neutral" | "poor";
+    spamScore: number;
+    phishingScore: number;
+    malwareScore: number;
+  };
+}
 
 const EmailFiltering = () => {
-  const [emailSubject, setEmailSubject] = useState("");
-  const [emailContent, setEmailContent] = useState("");
-  const [emailSender, setEmailSender] = useState("");
+  const [emailContent, setEmailContent] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<null | {
-    score: number;
-    verdict: "safe" | "suspicious" | "dangerous";
-    reasons: string[];
-    suggestions: string[];
-    details: {
-      links: { url: string; status: "safe" | "suspicious" | "malicious" }[];
-      attachments: { name: string; status: "safe" | "suspicious" | "malicious" }[];
-      senderReputation: "good" | "unknown" | "poor";
-      spamScore: number;
-      phishingScore: number;
-      malwareScore: number;
-    };
-  }>(null);
+  const [result, setResult] = useState<AnalysisResult | null>(null);
 
   const handleAnalyze = () => {
-    if (!emailSubject && !emailContent && !emailSender) {
-      toast({
-        title: "Missing information",
-        description: "Please provide email details to analyze",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    // Skip if empty
+    if (!emailContent.trim()) return;
+    
     setIsAnalyzing(true);
-
-    // Mock analysis - in a real application, this would call an API
+    
+    // Simulate analysis delay
     setTimeout(() => {
-      // This is simulated logic - in a real app this would come from the backend
-      const hasSuspiciousLinks = emailContent.includes("click here") || emailContent.includes("verify now");
-      const hasSuspiciousWords = emailContent.toLowerCase().includes("urgent") || emailContent.toLowerCase().includes("account suspended");
-      const isSpoofedSender = emailSender.includes("@gmail.com") && emailContent.includes("bank");
+      // Create different results based on content keywords
+      let analysisResult: AnalysisResult;
+      const reasons: string[] = [];
+      const suggestions: string[] = [];
       
-      // Generate mock analysis result
-      const result = {
-        score: hasSuspiciousLinks && hasSuspiciousWords ? 85 : hasSuspiciousLinks || hasSuspiciousWords ? 65 : 20,
-        verdict: hasSuspiciousLinks && hasSuspiciousWords ? "dangerous" : hasSuspiciousLinks || hasSuspiciousWords || isSpoofedSender ? "suspicious" : "safe",
-        reasons: [],
-        suggestions: [],
-        details: {
-          links: [
-            { 
-              url: "https://secure-looking-site.com/verify", 
-              status: hasSuspiciousLinks ? "malicious" : "safe" 
-            }
-          ],
-          attachments: [],
-          senderReputation: isSpoofedSender ? "poor" : emailSender.includes("@gmail.com") ? "unknown" : "good",
-          spamScore: Math.floor(Math.random() * 40) + (hasSuspiciousWords ? 40 : 0),
-          phishingScore: Math.floor(Math.random() * 30) + (hasSuspiciousLinks ? 50 : 0),
-          malwareScore: Math.floor(Math.random() * 10),
-        }
-      } as const;
-      
-      // Add reasons based on analysis
-      if (hasSuspiciousLinks) {
-        result.reasons.push("Contains suspicious links that may lead to phishing sites");
-      }
-      if (hasSuspiciousWords) {
-        result.reasons.push("Uses urgent language commonly found in phishing attempts");
-      }
-      if (isSpoofedSender) {
-        result.reasons.push("Potential sender spoofing detected (banking content from Gmail account)");
-      }
-      
-      // Add suggestions
-      if (result.verdict !== "safe") {
-        result.suggestions.push("Do not click on any links in this email");
-        result.suggestions.push("Do not download any attachments");
-        result.suggestions.push("Contact the purported sender through official channels to verify");
+      if (emailContent.toLowerCase().includes('verify') && 
+          emailContent.toLowerCase().includes('account') && 
+          emailContent.toLowerCase().includes('click')) {
+        // Suspicious phishing email
+        reasons.push('Email contains urgent action requests');
+        reasons.push('Contains suspicious links');
+        reasons.push('Sender domain doesn\'t match claimed organization');
+        
+        suggestions.push('Do not click any links in this email');
+        suggestions.push('Contact the company directly through official channels');
+        suggestions.push('Report this email as phishing');
+        
+        analysisResult = {
+          score: 20,
+          verdict: "dangerous",
+          reasons: reasons,
+          suggestions: suggestions,
+          details: {
+            links: [
+              { url: "https://secure-looking-site.com/verify", status: "malicious" }
+            ],
+            attachments: [],
+            senderReputation: "poor",
+            spamScore: 85,
+            phishingScore: 95,
+            malwareScore: 40
+          }
+        };
+      } else if (emailContent.toLowerCase().includes('offer') || 
+                 emailContent.toLowerCase().includes('discount') || 
+                 emailContent.toLowerCase().includes('limited time')) {
+        // Likely marketing email
+        reasons.push('Contains promotional language');
+        reasons.push('Bulk sending patterns detected');
+        
+        suggestions.push('Mark as promotional if not interested');
+        suggestions.push('Check if sender is in your contacts');
+        
+        analysisResult = {
+          score: 65,
+          verdict: "suspicious",
+          reasons: reasons,
+          suggestions: suggestions,
+          details: {
+            links: [
+              { url: "https://legitimate-store.com/offer", status: "safe" }
+            ],
+            attachments: [],
+            senderReputation: "neutral",
+            spamScore: 45,
+            phishingScore: 20,
+            malwareScore: 5
+          }
+        };
       } else {
-        result.suggestions.push("Email appears legitimate, but always stay vigilant");
+        // Likely safe email
+        reasons.push('No suspicious patterns detected');
+        reasons.push('Sender has good reputation');
+        
+        suggestions.push('Email appears to be legitimate');
+        
+        analysisResult = {
+          score: 85,
+          verdict: "safe",
+          reasons: reasons,
+          suggestions: suggestions,
+          details: {
+            links: [],
+            attachments: [
+              { name: "document.pdf", type: "PDF", status: "safe" }
+            ],
+            senderReputation: "good",
+            spamScore: 10,
+            phishingScore: 5,
+            malwareScore: 0
+          }
+        };
       }
       
-      // Update state with result
-      setAnalysisResult(result);
+      setResult(analysisResult);
       setIsAnalyzing(false);
-      
-      // Show toast notification
-      toast({
-        title: result.verdict === "safe" 
-          ? "Email appears safe" 
-          : result.verdict === "suspicious" 
-            ? "Potentially suspicious email detected" 
-            : "Dangerous email detected!",
-        description: result.reasons[0] || "Analysis completed",
-        variant: result.verdict === "safe" ? "default" : result.verdict === "suspicious" ? "default" : "destructive",
-      });
-
-      // Award points for completing an analysis (mock functionality)
-      toast({
-        title: "Points awarded!",
-        description: "You earned 5 points for analyzing an email",
-      });
     }, 2000);
   };
 
-  const handlePasteExample = () => {
-    setEmailSubject("Your account needs immediate verification");
-    setEmailSender("secure@bankofamerica-verify.com");
-    setEmailContent(`Dear Valued Customer,
-
-We have detected suspicious activity on your account and need you to verify your information immediately or your account will be suspended.
-
-Please click here to verify your account details: https://secure-looking-site.com/verify
-
-This is an urgent matter and requires your immediate attention.
-
-Best regards,
-Bank of America Security Team`);
+  const getVerdictColor = () => {
+    if (!result) return '';
+    switch(result.verdict) {
+      case 'safe': return 'text-green-500';
+      case 'suspicious': return 'text-amber-500';
+      case 'dangerous': return 'text-red-500';
+      default: return '';
+    }
   };
 
-  const clearForm = () => {
-    setEmailSubject("");
-    setEmailContent("");
-    setEmailSender("");
-    setAnalysisResult(null);
+  const getVerdictIcon = () => {
+    if (!result) return null;
+    switch(result.verdict) {
+      case 'safe': return <CheckCircle className="h-6 w-6 text-green-500" />;
+      case 'suspicious': return <AlertTriangle className="h-6 w-6 text-amber-500" />;
+      case 'dangerous': return <XCircle className="h-6 w-6 text-red-500" />;
+      default: return null;
+    }
   };
 
   return (
     <Layout>
-      <div className="py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-white to-blue-50">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10">
-            <div className="inline-block p-3 bg-blue-100 rounded-full mb-4">
-              <Mail className="h-8 w-8 text-suraksha-500" />
+      <div className="container mx-auto py-8 px-4 md:px-6">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold mb-2">Email Security Analysis</h1>
+          <p className="text-muted-foreground">Analyze email content to detect phishing attempts and spam</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <div className="mb-6">
+              <Label htmlFor="email-content" className="text-lg font-medium mb-2 block">
+                Paste Email Content
+              </Label>
+              <Textarea 
+                id="email-content"
+                placeholder="Paste the email content here to analyze for threats..."
+                className="min-h-[240px]"
+                value={emailContent}
+                onChange={(e) => setEmailContent(e.target.value)}
+              />
             </div>
-            <h1 className="text-4xl font-bold tracking-tight text-foreground mb-2">
-              Email <span className="gradient-text">Protection</span> Scanner
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Analyze your emails to detect phishing, spam, and other threats
-            </p>
+            
+            <Button 
+              className="w-full" 
+              onClick={handleAnalyze} 
+              disabled={!emailContent.trim() || isAnalyzing}
+            >
+              {isAnalyzing ? 'Analyzing...' : 'Analyze Email'}
+            </Button>
           </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-7 gap-8">
-            <div className="lg:col-span-4">
-              <Card className="shadow-md">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Shield className="h-5 w-5 mr-2 text-suraksha-500" /> 
-                    Email Analysis
-                  </CardTitle>
-                  <CardDescription>
-                    Enter the email details below to check for potential threats
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="sender">Sender Email</Label>
-                      <Input
-                        id="sender"
-                        placeholder="email@example.com"
-                        value={emailSender}
-                        onChange={(e) => setEmailSender(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="subject">Subject</Label>
-                      <Input
-                        id="subject"
-                        placeholder="Email subject"
-                        value={emailSubject}
-                        onChange={(e) => setEmailSubject(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="content">Email Content</Label>
-                      <Textarea
-                        id="content"
-                        placeholder="Paste the email content here..."
-                        className="min-h-[200px]"
-                        value={emailContent}
-                        onChange={(e) => setEmailContent(e.target.value)}
-                      />
-                    </div>
+          
+          <div className="bg-card rounded-lg shadow-md p-6 border">
+            {!result && !isAnalyzing && (
+              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
+                <Shield className="h-16 w-16 mb-4 text-muted" />
+                <h3 className="text-xl font-medium mb-2">No Analysis Yet</h3>
+                <p>Paste an email and click "Analyze Email" to check for threats</p>
+              </div>
+            )}
+            
+            {isAnalyzing && (
+              <div className="h-full flex flex-col items-center justify-center text-center p-6">
+                <div className="animate-pulse">
+                  <Shield className="h-16 w-16 mb-4 text-suraksha-500" />
+                </div>
+                <h3 className="text-xl font-medium mb-4">Analyzing Email...</h3>
+                <Progress value={45} className="w-full mb-4" />
+                <p className="text-muted-foreground">Checking for suspicious patterns and threats</p>
+              </div>
+            )}
+            
+            {result && !isAnalyzing && (
+              <div>
+                <div className="mb-6 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {getVerdictIcon()}
+                    <h3 className={`text-xl font-semibold ${getVerdictColor()}`}>
+                      {result.verdict.charAt(0).toUpperCase() + result.verdict.slice(1)}
+                    </h3>
                   </div>
-                </CardContent>
-                <CardFooter className="flex justify-between border-t pt-6">
-                  <div className="space-x-2">
-                    <Button variant="outline" onClick={clearForm}>
-                      Clear
-                    </Button>
-                    <Button variant="outline" onClick={handlePasteExample}>
-                      <Copy className="h-4 w-4 mr-2" /> Sample Email
-                    </Button>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Safety Score:</span>
+                    <span 
+                      className={`text-lg font-bold ${
+                        result.score > 70 ? 'text-green-500' : 
+                        result.score > 40 ? 'text-amber-500' : 'text-red-500'
+                      }`}
+                    >
+                      {result.score}%
+                    </span>
                   </div>
-                  <Button onClick={handleAnalyze} disabled={isAnalyzing}>
-                    {isAnalyzing ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Analyzing...
-                      </>
+                </div>
+                
+                <div className="mb-4">
+                  <h4 className="font-medium mb-2">Findings:</h4>
+                  <ul className="list-disc list-inside space-y-1">
+                    {result.reasons.map((reason, index) => (
+                      <li key={index} className="text-sm">{reason}</li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div className="mb-4">
+                  <h4 className="font-medium mb-2">Recommendations:</h4>
+                  <ul className="list-disc list-inside space-y-1">
+                    {result.suggestions.map((suggestion, index) => (
+                      <li key={index} className="text-sm">{suggestion}</li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2 flex items-center gap-2">
+                      <LinkIcon className="h-4 w-4" /> Links
+                    </h4>
+                    {result.details.links.length > 0 ? (
+                      <div className="space-y-2">
+                        {result.details.links.map((link, index) => (
+                          <div key={index} className="flex justify-between p-2 bg-background rounded border text-sm">
+                            <span className="truncate max-w-[70%]">{link.url}</span>
+                            <span className={`
+                              ${link.status === 'safe' ? 'text-green-500' : 
+                                link.status === 'suspicious' ? 'text-amber-500' : 'text-red-500'}
+                              font-medium
+                            `}>
+                              {link.status.charAt(0).toUpperCase() + link.status.slice(1)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     ) : (
-                      <>
-                        <Shield className="h-4 w-4 mr-2" /> Analyze Email
-                      </>
+                      <p className="text-sm text-muted-foreground">No links detected</p>
                     )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </div>
-
-            <div className="lg:col-span-3">
-              {analysisResult ? (
-                <Card className={`shadow-md ${
-                  analysisResult.verdict === "dangerous" ? "border-red-400" :
-                  analysisResult.verdict === "suspicious" ? "border-amber-400" :
-                  "border-green-400"
-                }`}>
-                  <CardHeader className={`${
-                    analysisResult.verdict === "dangerous" ? "bg-red-50" :
-                    analysisResult.verdict === "suspicious" ? "bg-amber-50" :
-                    "bg-green-50"
-                  }`}>
-                    <div className="flex justify-between items-center">
-                      <Badge className={`${
-                        analysisResult.verdict === "dangerous" ? "bg-red-500" :
-                        analysisResult.verdict === "suspicious" ? "bg-amber-500" :
-                        "bg-green-500"
-                      } text-white`}>
-                        {analysisResult.verdict === "dangerous" ? "High Risk" :
-                         analysisResult.verdict === "suspicious" ? "Suspicious" :
-                         "Safe"}
-                      </Badge>
-                      <span className="text-sm font-medium">
-                        Risk Score: {analysisResult.score}/100
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium mb-2 flex items-center gap-2">
+                      <PaperclipIcon className="h-4 w-4" /> Attachments
+                    </h4>
+                    {result.details.attachments.length > 0 ? (
+                      <div className="space-y-2">
+                        {result.details.attachments.map((attachment, index) => (
+                          <div key={index} className="flex justify-between p-2 bg-background rounded border text-sm">
+                            <span>{attachment.name} ({attachment.type})</span>
+                            <span className={`
+                              ${attachment.status === 'safe' ? 'text-green-500' : 
+                                attachment.status === 'suspicious' ? 'text-amber-500' : 'text-red-500'}
+                              font-medium
+                            `}>
+                              {attachment.status.charAt(0).toUpperCase() + attachment.status.slice(1)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No attachments detected</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium mb-2 flex items-center gap-2">
+                      <User className="h-4 w-4" /> Sender
+                    </h4>
+                    <div className="p-2 bg-background rounded border text-sm flex justify-between">
+                      <span>Reputation</span>
+                      <span className={`
+                        ${result.details.senderReputation === 'good' ? 'text-green-500' : 
+                          result.details.senderReputation === 'neutral' ? 'text-amber-500' : 'text-red-500'}
+                        font-medium
+                      `}>
+                        {result.details.senderReputation.charAt(0).toUpperCase() + result.details.senderReputation.slice(1)}
                       </span>
                     </div>
-                    <CardTitle className="flex items-center mt-2">
-                      {analysisResult.verdict === "dangerous" ? (
-                        <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
-                      ) : analysisResult.verdict === "suspicious" ? (
-                        <Info className="h-5 w-5 text-amber-500 mr-2" />
-                      ) : (
-                        <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                      )}
-                      {analysisResult.verdict === "dangerous" ? "Dangerous Email Detected" :
-                       analysisResult.verdict === "suspicious" ? "Potentially Suspicious" :
-                       "Email Appears Safe"}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-6">
-                    {analysisResult.reasons.length > 0 && (
-                      <div className="mb-4">
-                        <h3 className="text-sm font-semibold mb-2">Issues Detected:</h3>
-                        <ul className="space-y-1">
-                          {analysisResult.reasons.map((reason, i) => (
-                            <li key={i} className="text-sm flex items-start">
-                              <AlertTriangle className="h-4 w-4 text-red-500 mr-2 mt-0.5 flex-shrink-0" />
-                              <span>{reason}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    
-                    {analysisResult.suggestions.length > 0 && (
-                      <div className="mb-4">
-                        <h3 className="text-sm font-semibold mb-2">Recommendations:</h3>
-                        <ul className="space-y-1">
-                          {analysisResult.suggestions.map((suggestion, i) => (
-                            <li key={i} className="text-sm flex items-start">
-                              <Shield className="h-4 w-4 text-suraksha-500 mr-2 mt-0.5 flex-shrink-0" />
-                              <span>{suggestion}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    
-                    <div className="mt-6 pt-4 border-t">
-                      <h3 className="text-sm font-semibold mb-3">Detailed Analysis:</h3>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="text-sm">
-                          <span className="text-muted-foreground">Spam Score:</span>
-                          <div className="mt-1 h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-                            <div 
-                              style={{width: `${analysisResult.details.spamScore}%`}}
-                              className={`h-full ${
-                                analysisResult.details.spamScore > 70 ? "bg-red-500" :
-                                analysisResult.details.spamScore > 40 ? "bg-amber-500" :
-                                "bg-green-500"
-                              }`}
-                            />
-                          </div>
-                        </div>
-                        <div className="text-sm">
-                          <span className="text-muted-foreground">Phishing Score:</span>
-                          <div className="mt-1 h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-                            <div 
-                              style={{width: `${analysisResult.details.phishingScore}%`}}
-                              className={`h-full ${
-                                analysisResult.details.phishingScore > 70 ? "bg-red-500" :
-                                analysisResult.details.phishingScore > 40 ? "bg-amber-500" :
-                                "bg-green-500"
-                              }`}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-4 text-sm">
-                        <span className="text-muted-foreground">Sender Reputation:</span>
-                        <Badge className={`ml-2 ${
-                          analysisResult.details.senderReputation === "good" ? "bg-green-500" :
-                          analysisResult.details.senderReputation === "unknown" ? "bg-amber-500" :
-                          "bg-red-500"
-                        }`}>
-                          {analysisResult.details.senderReputation}
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="border-t pt-4">
-                    <div className="w-full">
-                      <p className="text-xs text-muted-foreground mb-1">
-                        This analysis is provided as guidance only and may not detect all threats.
-                      </p>
-                      <Button variant="outline" size="sm" className="w-full">
-                        <Upload className="h-4 w-4 mr-2" /> Report False Result
-                      </Button>
-                    </div>
-                  </CardFooter>
-                </Card>
-              ) : (
-                <Card className="shadow-md h-full flex flex-col justify-center">
-                  <CardContent className="pt-8 text-center">
-                    <div className="flex justify-center mb-4">
-                      <div className="p-4 bg-blue-100 rounded-full">
-                        <Shield className="h-8 w-8 text-suraksha-500" />
-                      </div>
-                    </div>
-                    <h3 className="text-xl font-semibold mb-2">Email Analysis</h3>
-                    <p className="text-muted-foreground mb-6">
-                      Enter email details and click "Analyze Email" to check for potential threats.
-                    </p>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-center">
-                        <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                        <span className="text-sm">Phishing Detection</span>
-                      </div>
-                      <div className="flex items-center justify-center">
-                        <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                        <span className="text-sm">Spam Analysis</span>
-                      </div>
-                      <div className="flex items-center justify-center">
-                        <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                        <span className="text-sm">Malware Link Scanning</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
