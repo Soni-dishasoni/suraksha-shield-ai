@@ -5,16 +5,16 @@
 
 @layer base {
   :root {
-    --background: 195 100% 98%;
-    --foreground: 222 47% 11%;
+    --background: 210 40% 98%;
+    --foreground: 224 71% 4%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 224 71% 4%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 224 71% 4%;
 
-    --primary: 196 82% 48%;
+    --primary: 210 100% 37%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96%;
@@ -23,7 +23,7 @@
     --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 196 82% 94%;
+    --accent: 210 100% 94%;
     --accent-foreground: 222 47% 11%;
 
     --destructive: 0 84% 60%;
@@ -31,7 +31,7 @@
 
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 196 82% 48%;
+    --ring: 210 100% 37%;
 
     --radius: 0.5rem;
   }
@@ -46,8 +46,8 @@
     --popover: 224 71% 4%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 196 82% 48%;
-    --primary-foreground: 222 47% 11%;
+    --primary: 210 100% 37%;
+    --primary-foreground: 210 40% 98%;
 
     --secondary: 217 33% 18%;
     --secondary-foreground: 210 40% 98%;
@@ -63,7 +63,7 @@
 
     --border: 217 33% 18%;
     --input: 217 33% 18%;
-    --ring: 196 82% 48%;
+    --ring: 210 100% 37%;
   }
 }
 
@@ -99,6 +99,33 @@
   }
   
   .shield-bg {
-    background-image: radial-gradient(circle at 50% 50%, rgba(30, 174, 219, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+    background-image: radial-gradient(circle at 50% 50%, rgba(0, 113, 188, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+  }
+  
+  .professional-card {
+    @apply rounded-xl border bg-card p-6 shadow-md hover:shadow-lg transition-shadow;
+  }
+  
+  .btn-primary {
+    @apply bg-suraksha-500 hover:bg-suraksha-600 text-white font-medium py-2 px-4 rounded-md transition-colors;
+  }
+  
+  .btn-outline {
+    @apply border border-suraksha-500 text-suraksha-500 hover:bg-suraksha-50 font-medium py-2 px-4 rounded-md transition-colors;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

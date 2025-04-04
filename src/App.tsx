@@ -15,6 +15,7 @@ import Leaderboard from "./pages/Leaderboard";
 import Badges from "./pages/Badges";
 import Quiz from "./pages/Quiz";
 import Profile from "./pages/Profile";
+import Guidelines from "./pages/Guidelines";
 import ChatBot from "./components/chatbot/ChatBot";
 
 const App = () => {
@@ -44,6 +45,7 @@ const App = () => {
             <Route path="/badges" element={<Badges />} />
             <Route path="/quiz" element={<Quiz />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/guidelines" element={<Guidelines />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

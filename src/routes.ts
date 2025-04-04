@@ -9,3 +9,4 @@ export const LEADERBOARD_ROUTE = "/leaderboard";
 export const BADGES_ROUTE = "/badges";
 export const QUIZ_ROUTE = "/quiz";
 export const PROFILE_ROUTE = "/profile";
+export const GUIDELINES_ROUTE = "/guidelines";
